@@ -27,3 +27,34 @@ The marsrovers microservice is designed as a REST-API. The endpoints are:
 * `GET /zerglings/<zergling_id>` - Get the status of the specified zergling
 * `POST /zerglings/<zergling_id>/_action` - Move the zergling
 * `POST /zerglings/_spawn` - Spawn a zergling (through **viper** but omitted for simplicity)
+
+Build
+=====
+
+## Build on host
+
+    make overmind
+
+This will generate `overmind` binary.
+
+## Run on host
+
+    ./overmind
+
+The overmind service will be on `0.0.0.0:8080` by default. To run it on a different ip or port, use `-http.addr=`:
+
+    ./overmind -http.addr=0.0.0.0:9999
+
+## Run inside Docker container
+
+First you will need to build the docker image:
+
+    make image
+
+Run it:
+
+    docker run overmind
+
+To run it on a different port:
+
+    docker run -e HTTPADDR=0.0.0.0:9999 overmind

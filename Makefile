@@ -1,5 +1,10 @@
-compile:
+.PHONY: clean
+clean:
+	rm overmind
+
+overmind:
 	CGO_ENABLED=0 go build -tags netgo -a -v -o overmind cmd/main.go
 
-build: compile
+.PHONY: image
+image: overmind
 	docker build -t overmind .
