@@ -14,9 +14,18 @@ import (
 
 func main() {
 	var (
-		httpAddr = flag.String("http.addr", ":8080", "HTTP listen address")
+		defaultHTTPAddr = ":8080"
+		httpAddr        = flag.String("http.addr", "", "HTTP listen address")
 	)
 	flag.Parse()
+	if *httpAddr == "" {
+		envHTTPAddr, ok := os.LookupEnv("OVERMIND_HTTP_ADDR")
+		if !ok {
+			httpAddr = &defaultHTTPAddr
+		} else {
+			httpAddr = &envHTTPAddr
+		}
+	}
 
 	var logger log.Logger
 	{

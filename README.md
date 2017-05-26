@@ -57,4 +57,4 @@ Run it:
 
 To run it on a different port:
 
-    docker run -e HTTPADDR=0.0.0.0:9999 overmind
+    docker run -e OVERMIND_HTTP_ADDR=0.0.0.0:9999 overmind
