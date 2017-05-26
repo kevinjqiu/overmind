@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-kit/kit/log"
 	"github.com/kevinjqiu/overmind"
@@ -30,6 +33,21 @@ func main() {
 
 	var handler http.Handler
 	{
-		handler = overmind.MakeHTTPHandler(s, log.With(logger, "component", "HTTP"))
+		handler = overmind.MakeHTTPHandler(service, log.With(logger, "component", "HTTP"))
 	}
+
+	errs := make(chan error)
+
+	go func() {
+		c := make(chan os.Signal)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
+
+	go func() {
+		logger.Log("transport", "HTTP", "addr", *httpAddr)
+		errs <- http.ListenAndServe(*httpAddr, handler)
+	}()
+
+	logger.Log("exit", <-errs)
 }
