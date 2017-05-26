@@ -16,7 +16,7 @@ type overmindService struct {
 }
 
 func (s *overmindService) GetHealth(ctx context.Context) (Health, error) {
-	return Health{"1.0.0"}, nil
+	return Health{Version}, nil
 }
 
 // NewOvermindService constructs a new instance of the Overmind service
