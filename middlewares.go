@@ -15,6 +15,7 @@ type loggingMiddleware struct {
 	logger log.Logger
 }
 
+// TODO: take variadic param for extra logging
 func makeLoggingFunc(logger log.Logger, methodName string, err error) func(time.Time) {
 	return func(begin time.Time) {
 		logger.Log("method", methodName, "took", time.Since(begin), "err", err)
@@ -39,6 +40,11 @@ func (mw loggingMiddleware) PostZerglings(ctx context.Context) (zergling Zerglin
 func (mw loggingMiddleware) GetZerglingByID(ctx context.Context, id string) (zergling Zergling, err error) {
 	defer makeLoggingFunc(mw.logger, "PostZerglings", err)
 	return mw.next.GetZerglingByID(ctx, id)
+}
+
+func (mw loggingMiddleware) PostZerglingCommand(ctx context.Context, id string, command Command) (zergling Zergling, err error) {
+	defer makeLoggingFunc(mw.logger, "PostZerglingCommand", err)
+	return mw.next.PostZerglingCommand(ctx, id, command)
 }
 
 // LoggingMiddleware provides logging for the service
