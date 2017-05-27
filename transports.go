@@ -3,6 +3,7 @@ package overmind
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
@@ -52,6 +53,16 @@ func noopDecodeRequest(_ context.Context, r *http.Request) (request interface{},
 	return r, nil
 }
 
+func decodeGetZerglingByIDRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		return nil, errors.New("Missing \"id\"")
+	}
+	request = getZerglingByIDRequest{id}
+	return request, nil
+}
+
 // MakeHTTPHandler mounts all of the service endpoints into an http.Handler.
 func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
@@ -81,5 +92,13 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		encodeResponse,
 		options...,
 	))
+
+	r.Methods("GET").Path("/zerglings/{id}").Handler(httptransport.NewServer(
+		endpoints.GetZerglingByIDEndpoint,
+		decodeGetZerglingByIDRequest,
+		encodeResponse,
+		options...,
+	))
+
 	return r
 }

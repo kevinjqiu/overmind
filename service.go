@@ -30,6 +30,7 @@ type Service interface {
 	GetHealth(ctx context.Context) (Health, error)
 	GetZerglings(ctx context.Context) ([]Zergling, error)
 	PostZerglings(ctx context.Context) (Zergling, error)
+	GetZerglingByID(ctx context.Context, id string) (Zergling, error)
 }
 
 type overmindService struct {
@@ -67,6 +68,16 @@ func (s *overmindService) PostZerglings(ctx context.Context) (Zergling, error) {
 	db := s.brain.DB("zerglings")
 	zergling := Zergling{ID: id}
 	_, err := db.Put(id, zergling, "")
+	if err != nil {
+		return Zergling{}, err
+	}
+	return zergling, nil
+}
+
+func (s *overmindService) GetZerglingByID(ctx context.Context, id string) (Zergling, error) {
+	db := s.brain.DB("zerglings")
+	var zergling Zergling
+	err := db.Get(id, &zergling, couchdb.Options{})
 	if err != nil {
 		return Zergling{}, err
 	}
