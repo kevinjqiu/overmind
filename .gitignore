@@ -29,3 +29,5 @@ _testmain.go
 # external packages folder
 vendor/
 overmind
+cmd/debug
+.vscode/

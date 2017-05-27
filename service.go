@@ -48,19 +48,25 @@ func (s *overmindService) GetHealth(ctx context.Context) (Health, error) {
 	return Health{Version, brainStatus}, nil
 }
 
+type allDocsResult struct {
+	TotalRows int `json:"total_rows"`
+	Offset    int
+	Rows      []Zergling
+}
+
 func (s *overmindService) GetZerglings(ctx context.Context) ([]Zergling, error) {
 	db := s.brain.DB("zerglings")
 	if db == nil {
 		return nil, ErrDatabaseNotFound
 	}
 
-	var result []Zergling
-	err := db.AllDocs(result, couchdb.Options{})
+	var result allDocsResult
+	err := db.AllDocs(&result, couchdb.Options{})
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return result.Rows, nil
 }
 
 func (s *overmindService) PostZerglings(ctx context.Context) (Zergling, error) {
