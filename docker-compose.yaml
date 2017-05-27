@@ -2,5 +2,3 @@ version: '2'
 services:
     couchdb:
         image: couchdb:1.6.1
-    overmind:
-        build: .
