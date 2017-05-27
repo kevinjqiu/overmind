@@ -63,6 +63,22 @@ func decodeGetZerglingByIDRequest(_ context.Context, r *http.Request) (request i
 	return request, nil
 }
 
+func decodePostZerglingActionRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	var req postZerglingActionRequest
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		return nil, errors.New("Missing \"id\"")
+	}
+
+	if e := json.NewDecoder(r.Body).Decode(&req.command); e != nil {
+		return nil, e
+	}
+
+	req.id = id
+	return req, nil
+}
+
 // MakeHTTPHandler mounts all of the service endpoints into an http.Handler.
 func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
@@ -100,5 +116,11 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("POST").Path("/zerglings/{id}").Handler(httptransport.NewServer(
+		endpoints.PostZerglingActionEndpoint,
+		decodePostZerglingActionRequest,
+		encodeResponse,
+		options...,
+	))
 	return r
 }

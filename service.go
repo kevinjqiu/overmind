@@ -63,7 +63,7 @@ type Zergling struct {
 	Location       Location  `json:"location"`
 	Facing         Facing    `json:"facing"`
 	CommandHistory []Command `json:"commandHistory,omitempty"`
-	Revision       string    `json:"_rev"`
+	Revision       string    `json:"_rev,omitempty"`
 }
 
 func (z *Zergling) receiveCommand(command Command) error {

@@ -8,10 +8,11 @@ import (
 
 // Endpoints collects all of the endpoints that compose an overmind service.
 type Endpoints struct {
-	GetHealthEndpoint       endpoint.Endpoint
-	GetZerglingsEndpoint    endpoint.Endpoint
-	PostZerglingsEndpoint   endpoint.Endpoint
-	GetZerglingByIDEndpoint endpoint.Endpoint
+	GetHealthEndpoint          endpoint.Endpoint
+	GetZerglingsEndpoint       endpoint.Endpoint
+	PostZerglingsEndpoint      endpoint.Endpoint
+	GetZerglingByIDEndpoint    endpoint.Endpoint
+	PostZerglingActionEndpoint endpoint.Endpoint
 }
 
 type getHealthResponse struct {
@@ -34,6 +35,16 @@ type getZerglingByIDRequest struct {
 }
 
 type getZerglingByIDResponse struct {
+	Zergling Zergling `json:"zergling,omitempty"`
+	Err      error    `json:"err,omitempty"`
+}
+
+type postZerglingActionRequest struct {
+	id      string
+	command Command
+}
+
+type postZerglingActionResponse struct {
 	Zergling Zergling `json:"zergling,omitempty"`
 	Err      error    `json:"err,omitempty"`
 }
@@ -73,12 +84,21 @@ func makeGetZerglingByIDEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
+func makePostZerglingActionEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(postZerglingActionRequest)
+		zergling, e := s.PostZerglingCommand(ctx, req.id, req.command)
+		return postZerglingActionResponse{zergling, e}, nil
+	}
+}
+
 // MakeServerEndpoints returns an Endpoint struct
 func MakeServerEndpoints(s Service) Endpoints {
 	return Endpoints{
-		GetHealthEndpoint:       makeGetHealthEndpoint(s),
-		GetZerglingsEndpoint:    makeGetZerglingsEndpoint(s),
-		PostZerglingsEndpoint:   makePostZerglingsEndpoint(s),
-		GetZerglingByIDEndpoint: makeGetZerglingByIDEndpoint(s),
+		GetHealthEndpoint:          makeGetHealthEndpoint(s),
+		GetZerglingsEndpoint:       makeGetZerglingsEndpoint(s),
+		PostZerglingsEndpoint:      makePostZerglingsEndpoint(s),
+		GetZerglingByIDEndpoint:    makeGetZerglingByIDEndpoint(s),
+		PostZerglingActionEndpoint: makePostZerglingActionEndpoint(s),
 	}
 }
