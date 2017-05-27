@@ -1,0 +1,8 @@
+FROM byrnedo/alpine-curl
+ENV COUCHDB_USERNAME admin
+ENV COUCHDB_PASSWORD password
+ENV COUCHDB_SERVICE_HOST localhost
+ENV COUCHDB_SERVICE_PORT 5984
+ADD bootstrap.sh /
+ENTRYPOINT []
+CMD ["/bootstrap.sh"]

@@ -17,6 +17,10 @@ Overmind
 --------
 The overmind is the service that the user communicate with to control the swarm. Overmind can be instructed to spawn zerglings through a viper and control the spawned zerglings.
 
+Brain
+-----
+The brain of the overmind service is a [CouchDB](https://couchdb.apache.org) database. CouchDB was chosen for its simplicity and because of its RESTish-ness, we can treat CouchDB as if it were another web service (albeit a stateful one).
+
 API Spec
 ========
 
