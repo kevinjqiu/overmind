@@ -31,6 +31,11 @@ func (mw loggingMiddleware) GetZerglings(ctx context.Context) (zerglings []Zergl
 	return mw.next.GetZerglings(ctx)
 }
 
+func (mw loggingMiddleware) PostZerglings(ctx context.Context) (zergling Zergling, err error) {
+	defer makeLoggingFunc(mw.logger, "PostZerglings", err)
+	return mw.next.PostZerglings(ctx)
+}
+
 // LoggingMiddleware provides logging for the service
 func LoggingMiddleware(logger log.Logger) Middleware {
 	return func(next Service) Service {

@@ -8,8 +8,9 @@ import (
 
 // Endpoints collects all of the endpoints that compose an overmind service.
 type Endpoints struct {
-	GetHealthEndpoint    endpoint.Endpoint
-	GetZerglingsEndpoint endpoint.Endpoint
+	GetHealthEndpoint     endpoint.Endpoint
+	GetZerglingsEndpoint  endpoint.Endpoint
+	PostZerglingsEndpoint endpoint.Endpoint
 }
 
 type getHealthResponse struct {
@@ -20,6 +21,11 @@ type getHealthResponse struct {
 type getZerglingsResponse struct {
 	Zerglings []Zergling `json:"zerglings,omitempty"`
 	Err       error      `json:"err,omitempty"`
+}
+
+type postZerglingsResponse struct {
+	Zergling Zergling `json:"zergling,omitempty"`
+	Err      error    `json:"err,omitempty"`
 }
 
 func makeGetHealthEndpoint(s Service) endpoint.Endpoint {
@@ -42,10 +48,18 @@ func makeGetZerglingsEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
+func makePostZerglingsEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		zergling, e := s.PostZerglings(ctx)
+		return postZerglingsResponse{Zergling: zergling, Err: e}, nil
+	}
+}
+
 // MakeServerEndpoints returns an Endpoint struct
 func MakeServerEndpoints(s Service) Endpoints {
 	return Endpoints{
-		GetHealthEndpoint:    makeGetHealthEndpoint(s),
-		GetZerglingsEndpoint: makeGetZerglingsEndpoint(s),
+		GetHealthEndpoint:     makeGetHealthEndpoint(s),
+		GetZerglingsEndpoint:  makeGetZerglingsEndpoint(s),
+		PostZerglingsEndpoint: makePostZerglingsEndpoint(s),
 	}
 }

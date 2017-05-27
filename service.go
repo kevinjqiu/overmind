@@ -8,6 +8,7 @@ import (
 	"time"
 
 	couchdb "github.com/fjl/go-couchdb"
+	"github.com/google/uuid"
 )
 
 // Health represents the health of the service
@@ -21,13 +22,14 @@ type Command string
 // Zergling represents the simplest form of a zerg mutation
 type Zergling struct {
 	ID             string    `json:"id"`
-	CommandHistory []Command `json:"commandHistory"`
+	CommandHistory []Command `json:"commandHistory,omitempty"`
 }
 
 // Service is an interface for the Overmind service
 type Service interface {
 	GetHealth(ctx context.Context) (Health, error)
 	GetZerglings(ctx context.Context) ([]Zergling, error)
+	PostZerglings(ctx context.Context) (Zergling, error)
 }
 
 type overmindService struct {
@@ -58,6 +60,17 @@ func (s *overmindService) GetZerglings(ctx context.Context) ([]Zergling, error) 
 	}
 
 	return result, nil
+}
+
+func (s *overmindService) PostZerglings(ctx context.Context) (Zergling, error) {
+	id := uuid.New().String()
+	db := s.brain.DB("zerglings")
+	zergling := Zergling{ID: id}
+	_, err := db.Put(id, zergling, "")
+	if err != nil {
+		return Zergling{}, err
+	}
+	return zergling, nil
 }
 
 func newCouchDBClient() *couchdb.Client {

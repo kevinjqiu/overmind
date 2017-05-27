@@ -68,8 +68,15 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("GET").Path("/zerglings").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/zerglings/").Handler(httptransport.NewServer(
 		endpoints.GetZerglingsEndpoint,
+		noopDecodeRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("POST").Path("/zerglings/").Handler(httptransport.NewServer(
+		endpoints.PostZerglingsEndpoint,
 		noopDecodeRequest,
 		encodeResponse,
 		options...,
