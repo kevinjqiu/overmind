@@ -169,7 +169,8 @@ func (s *overmindService) PostZerglingCommand(ctx context.Context, id string, co
 
 	zergling.CommandHistory = append(zergling.CommandHistory, command)
 	zergling.receiveCommand(command)
-	// TODO: Persist
+	db := s.brain.DB("zerglings")
+	db.Put(zergling.ID, zergling, zergling.Revision)
 	return zergling, err
 }
 
