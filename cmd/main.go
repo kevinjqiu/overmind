@@ -27,22 +27,15 @@ func main() {
 		}
 	}
 
-	var logger log.Logger
-	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-		logger = log.With(logger, "caller", log.DefaultCaller)
-	}
-
 	var service overmind.Service
 	{
 		service = overmind.NewOvermindService()
-		service = overmind.LoggingMiddleware(logger)(service)
+		service = overmind.LoggingMiddleware(overmind.Logger)(service)
 	}
 
 	var handler http.Handler
 	{
-		handler = overmind.MakeHTTPHandler(service, log.With(logger, "component", "HTTP"))
+		handler = overmind.MakeHTTPHandler(service, log.With(overmind.Logger, "component", "HTTP"))
 	}
 
 	errs := make(chan error)
@@ -54,9 +47,9 @@ func main() {
 	}()
 
 	go func() {
-		logger.Log("transport", "HTTP", "addr", *httpAddr)
+		overmind.Logger.Log("transport", "HTTP", "addr", *httpAddr)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
-	logger.Log("exit", <-errs)
+	overmind.Logger.Log("exit", <-errs)
 }

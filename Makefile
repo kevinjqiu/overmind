@@ -1,9 +1,9 @@
 .PHONY: clean
 clean:
-	rm overmind
+	rm -f overmind
 
 overmind:
-	CGO_ENABLED=0 go build -tags netgo -a -v -o overmind cmd/main.go
+	CGO_ENABLED=0 go build -tags netgo -a -o overmind cmd/main.go
 
 .PHONY: image
 image: overmind

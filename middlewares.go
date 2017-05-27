@@ -15,11 +15,20 @@ type loggingMiddleware struct {
 	logger log.Logger
 }
 
+func makeLoggingFunc(logger log.Logger, methodName string, err error) func(time.Time) {
+	return func(begin time.Time) {
+		logger.Log("method", methodName, "took", time.Since(begin), "err", err)
+	}
+}
+
 func (mw loggingMiddleware) GetHealth(ctx context.Context) (health Health, err error) {
-	defer func(begin time.Time) {
-		mw.logger.Log("method", "GetHealth", "took", time.Since(begin), "err", err)
-	}(time.Now())
+	defer makeLoggingFunc(mw.logger, "GetHealth", err)
 	return mw.next.GetHealth(ctx)
+}
+
+func (mw loggingMiddleware) GetZerglings(ctx context.Context) (zerglings []Zergling, err error) {
+	defer makeLoggingFunc(mw.logger, "GetZerglings", err)
+	return mw.next.GetZerglings(ctx)
 }
 
 // LoggingMiddleware provides logging for the service

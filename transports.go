@@ -48,7 +48,7 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	return json.NewEncoder(w).Encode(response)
 }
 
-func decodeGetHealthRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+func noopDecodeRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
 	return r, nil
 }
 
@@ -63,10 +63,16 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 
 	r.Methods("GET").Path("/_health").Handler(httptransport.NewServer(
 		endpoints.GetHealthEndpoint,
-		decodeGetHealthRequest,
+		noopDecodeRequest,
 		encodeResponse,
 		options...,
 	))
 
+	r.Methods("GET").Path("/zerglings").Handler(httptransport.NewServer(
+		endpoints.GetZerglingsEndpoint,
+		noopDecodeRequest,
+		encodeResponse,
+		options...,
+	))
 	return r
 }

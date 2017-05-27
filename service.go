@@ -1,25 +1,88 @@
 package overmind
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+
+	couchdb "github.com/fjl/go-couchdb"
+)
 
 // Health represents the health of the service
 type Health struct {
 	Version string `json:"version"`
+	Brain   string `json:"brain"`
+}
+
+type Command string
+
+// Zergling represents the simplest form of a zerg mutation
+type Zergling struct {
+	ID             string    `json:"id"`
+	CommandHistory []Command `json:"commandHistory"`
 }
 
 // Service is an interface for the Overmind service
 type Service interface {
 	GetHealth(ctx context.Context) (Health, error)
+	GetZerglings(ctx context.Context) ([]Zergling, error)
 }
 
 type overmindService struct {
+	brain *couchdb.Client
 }
 
 func (s *overmindService) GetHealth(ctx context.Context) (Health, error) {
-	return Health{Version}, nil
+	var brainStatus string
+	err := s.brain.Ping()
+	if err != nil {
+		brainStatus = "damaged"
+	} else {
+		brainStatus = "ok"
+	}
+	return Health{Version, brainStatus}, nil
+}
+
+func (s *overmindService) GetZerglings(ctx context.Context) ([]Zergling, error) {
+	db := s.brain.DB("zerglings")
+	if db == nil {
+		return nil, ErrDatabaseNotFound
+	}
+
+	var result []Zergling
+	err := db.AllDocs(result, couchdb.Options{})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func newCouchDBClient() *couchdb.Client {
+	couchDBUserName := os.Getenv("COUCHDB_USERNAME")
+	couchDBPassword := os.Getenv("COUCHDB_PASSWORD")
+	couchDBServiceHost := os.Getenv("COUCHDB_SERVICE_HOST")
+	couchDBServicePort := os.Getenv("COUCHDB_SERVICE_PORT")
+
+	Logger.Log(
+		"COUCHDB_USERNAME", couchDBUserName,
+		"COUCHDB_PASSWORD", "***",
+		"COUCHDB_SERVICE_HOST", couchDBServiceHost,
+		"COUCHDB_SERVICE_PORT", couchDBServicePort)
+
+	rawurl := fmt.Sprintf("http://%s:%s@%s:%s", couchDBUserName, couchDBPassword, couchDBServiceHost, couchDBServicePort)
+	client, err := couchdb.NewClient(rawurl, &http.Transport{
+		ResponseHeaderTimeout: 1 * time.Second,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return client
 }
 
 // NewOvermindService constructs a new instance of the Overmind service
 func NewOvermindService() Service {
-	return &overmindService{}
+	return &overmindService{brain: newCouchDBClient()}
 }

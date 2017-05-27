@@ -30,7 +30,7 @@ The marsrovers microservice is designed as a REST-API. The endpoints are:
 * `GET /zerglings` - All zerglings the overmind is aware of and their locations
 * `GET /zerglings/<zergling_id>` - Get the status of the specified zergling
 * `POST /zerglings/<zergling_id>/_action` - Move the zergling
-* `POST /zerglings/_spawn` - Spawn a zergling (through **viper** but omitted for simplicity)
+* `POST /zerglings/_spawn` - Spawn a zergling
 
 Build
 =====
