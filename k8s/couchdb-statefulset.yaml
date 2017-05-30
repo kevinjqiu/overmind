@@ -1,0 +1,40 @@
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+    name: couchdb
+spec:
+    serviceName: couchdb
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                tier: db
+        spec:
+            terminationGracePeriodSeconds: 10
+            containers:
+                - name: couchdb
+                  image: couchdb:1.6
+                  ports:
+                      - containerPort: 5984
+                        name: http
+                  volumeMounts:
+                      - name: couchdb-data
+                        mountPath: /usr/local/var/lib/couchdb
+                  env:
+                      - name: COUCHDB_USER
+                        value: admin
+                      - name: COUCHDB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: couchdb-password
+                                key: password
+    volumeClaimTemplates:
+        - metadata:
+            name: couchdb-data
+          spec:
+              accessModes:
+                  - ReadWriteOnce
+              resources:
+                  requests:
+                      storage: 10M
+              storageClassName: ""
