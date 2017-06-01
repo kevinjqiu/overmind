@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: overmind
+spec:
+    replicas: 3
+    template:
+        metadata:
+            labels:
+                app: overmind
+                tier: web
+        spec:
+            containers:
+                - name: overmind
+                  image: kevinjqiu/overmind:1
+                  imagePullPolicy: Always
+                  env:
+                      - name: OVERMIND_HTTP_ADDR
+                        value: "0.0.0.0:8080"
+                      - name: COUCHDB_USERNAME
+                        value: admin
+                      - name: COUCHDB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: couchdb-password
+                                key: password
