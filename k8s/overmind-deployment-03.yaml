@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: overmind
+spec:
+    replicas: 3
+    template:
+        metadata:
+            labels:
+                app: overmind
+                tier: web
+        spec:
+            containers:
+                - name: overmind
+                  image: kevinjqiu/overmind:1
+                  imagePullPolicy: Always
+                  env:
+                      - name: OVERMIND_HTTP_ADDR
+                        value: "0.0.0.0:8080"
+                      - name: COUCHDB_USERNAME
+                        value: admin
+                      - name: COUCHDB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: couchdb-password
+                                key: password
+            initContainers:
+                - name: init-overmind-create-user
+                  image: byrnedo/alpine-curl
+                  command: ['sh', '-c', 'curl -XPUT http://$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT/_config/admins/$COUCHDB_USERNAME -d"\"$COUCHDB_PASSWORD"\"']
+                  env:
+                      - name: COUCHDB_USERNAME
+                        value: admin
+                      - name: COUCHDB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: couchdb-password
+                                key: password
+                - name: init-overmind-create-database
+                  image: byrnedo/alpine-curl
+                  command: ['sh', '-c', 'curl -XPUT http://$COUCHDB_USERNAME:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT/zerglings']
+                  env:
+                      - name: COUCHDB_USERNAME
+                        value: admin
+                      - name: COUCHDB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: couchdb-password
+                                key: password
