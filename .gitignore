@@ -31,3 +31,4 @@ vendor/
 overmind
 cmd/debug
 .vscode/
+.idea/
